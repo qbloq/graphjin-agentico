@@ -71,7 +71,7 @@ func (gj *graphjinEngine) discoverDatabase(ctx *dbContext) error {
 		return nil
 	}
 
-	dbinfo, err := sdata.GetDBInfo(ctx.db, ctx.dbtype, gj.conf.Blocklist)
+	dbinfo, err := sdata.GetDBInfo(ctx.db, ctx.dbtype, gj.conf.Blocklist, ctx.schemas)
 	if err != nil {
 		return fmt.Errorf("database %s: schema discovery failed: %w", ctx.name, err)
 	}
@@ -393,9 +393,10 @@ func OptionSetDatabases(connections map[string]*sql.DB) Option {
 
 			// Store bare context — full init happens later
 			gj.databases[name] = &dbContext{
-				name:   name,
-				db:     db,
-				dbtype: dbConf.Type,
+				name:    name,
+				db:      db,
+				dbtype:  dbConf.Type,
+				schemas: []string{dbConf.Schema},
 			}
 		}
 

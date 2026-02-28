@@ -59,6 +59,7 @@ func GetDBInfo(
 	db *sql.DB,
 	dbType string,
 	blockList []string,
+	schemas []string,
 ) (*DBInfo, error) {
 	var dbVersion int
 	var dbSchema, dbName string
@@ -103,18 +104,22 @@ func GetDBInfo(
 
 	g.Go(func() error {
 		var err error
-		if cols, err = DiscoverColumns(db, dbType, blockList); err != nil {
-			return err
-		}
+		cols, err = DiscoverColumns(db, dbType, blockList, schemas)
+		return err
+	})
 
-		if funcs, err = DiscoverFunctions(db, dbType, blockList); err != nil {
-			return err
-		}
-		return nil
+	g.Go(func() error {
+		var err error
+		funcs, err = DiscoverFunctions(db, dbType, blockList, schemas)
+		return err
 	})
 
 	if err := g.Wait(); err != nil {
 		return nil, err
+	}
+
+	if len(schemas) > 0 {
+		dbSchema = schemas[0]
 	}
 
 	di := NewDBInfo(
@@ -311,12 +316,20 @@ type DBColumn struct {
 }
 
 // DiscoverColumns returns the columns of a table
-func DiscoverColumns(db *sql.DB, dbtype string, blockList []string) ([]DBColumn, error) {
+func DiscoverColumns(db *sql.DB, dbtype string, blockList []string, schemas []string) ([]DBColumn, error) {
 	var sqlStmt string
 
 	switch dbtype {
 	case "postgres", "":
 		sqlStmt = postgresColumnsStmt
+		if len(schemas) > 0 {
+			var quoted []string
+			for _, s := range schemas {
+				quoted = append(quoted, fmt.Sprintf("'%s'", s))
+			}
+			sl := strings.Join(quoted, ", ")
+			sqlStmt = strings.ReplaceAll(sqlStmt, "ANY(current_schemas(false))", fmt.Sprintf("ANY(ARRAY[%s])", sl))
+		}
 	case "mysql":
 		sqlStmt = mysqlColumnsStmt
 	case "mariadb":
@@ -493,12 +506,20 @@ type DBFuncParam struct {
 }
 
 // DiscoverFunctions returns the functions of a database
-func DiscoverFunctions(db *sql.DB, dbtype string, blockList []string) ([]DBFunction, error) {
+func DiscoverFunctions(db *sql.DB, dbtype string, blockList []string, schemas []string) ([]DBFunction, error) {
 	var sqlStmt string
 
 	switch dbtype {
 	case "postgres", "":
 		sqlStmt = postgresFunctionsStmt
+		if len(schemas) > 0 {
+			var quoted []string
+			for _, s := range schemas {
+				quoted = append(quoted, fmt.Sprintf("'%s'", s))
+			}
+			sl := strings.Join(quoted, ", ")
+			sqlStmt = strings.ReplaceAll(sqlStmt, "ANY(current_schemas(false))", fmt.Sprintf("ANY(ARRAY[%s])", sl))
+		}
 	case "mysql":
 		sqlStmt = mysqlFunctionsStmt
 	case "mariadb":

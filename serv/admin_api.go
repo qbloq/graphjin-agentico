@@ -82,6 +82,12 @@ func adminTablesHandler(s1 *HttpService) http.Handler {
 		}
 
 		s := s1.Load().(*graphjinService)
+
+		if err := s.checkGraphJinInitialized(); err != nil {
+			writeJSONError(w, http.StatusServiceUnavailable, err.Error())
+			return
+		}
+
 		w.Header().Set("Content-Type", "application/json")
 
 		tables := s.gj.GetTables()
@@ -103,6 +109,11 @@ func adminTableSchemaHandler(s1 *HttpService) http.Handler {
 		}
 
 		s := s1.Load().(*graphjinService)
+
+		if err := s.checkGraphJinInitialized(); err != nil {
+			writeJSONError(w, http.StatusServiceUnavailable, err.Error())
+			return
+		}
 
 		// Extract table name from URL path: /api/v1/admin/tables/{name}
 		path := strings.TrimPrefix(r.URL.Path, "/api/v1/admin/tables/")
@@ -143,6 +154,11 @@ func adminQueriesHandler(s1 *HttpService) http.Handler {
 
 		s := s1.Load().(*graphjinService)
 
+		if err := s.checkGraphJinInitialized(); err != nil {
+			writeJSONError(w, http.StatusServiceUnavailable, err.Error())
+			return
+		}
+
 		w.Header().Set("Content-Type", "application/json")
 
 		queries, err := s.gj.ListSavedQueries()
@@ -168,6 +184,11 @@ func adminQueryDetailHandler(s1 *HttpService) http.Handler {
 		}
 
 		s := s1.Load().(*graphjinService)
+
+		if err := s.checkGraphJinInitialized(); err != nil {
+			writeJSONError(w, http.StatusServiceUnavailable, err.Error())
+			return
+		}
 
 		// Extract query name from URL path: /api/v1/admin/queries/{name}
 		path := strings.TrimPrefix(r.URL.Path, "/api/v1/admin/queries/")
@@ -207,6 +228,11 @@ func adminFragmentsHandler(s1 *HttpService) http.Handler {
 		}
 
 		s := s1.Load().(*graphjinService)
+
+		if err := s.checkGraphJinInitialized(); err != nil {
+			writeJSONError(w, http.StatusServiceUnavailable, err.Error())
+			return
+		}
 
 		w.Header().Set("Content-Type", "application/json")
 
@@ -624,6 +650,11 @@ func adminDatabaseHandler(s1 *HttpService) http.Handler {
 			return
 		}
 		stats := db.Stats()
+
+		if err := s.checkGraphJinInitialized(); err != nil {
+			writeJSONError(w, http.StatusServiceUnavailable, err.Error())
+			return
+		}
 
 		// Get table and query counts
 		tables := s.gj.GetTables()

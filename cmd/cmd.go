@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -116,7 +115,7 @@ func setup(cpath string) {
 		log.Infof("Created default config: %s", configFile)
 	}
 
-	if conf, err = serv.ReadInConfig(path.Join(cp, cn)); err != nil {
+	if conf, err = serv.ReadInConfig(filepath.Join(cp, cn)); err != nil {
 		log.Fatal(err)
 	}
 }

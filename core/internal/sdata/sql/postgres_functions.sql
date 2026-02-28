@@ -18,14 +18,8 @@ FROM information_schema.routines r
 	)
 WHERE r.routine_type = 'FUNCTION'
 	AND r.data_type != 'void'
-	AND r.specific_schema NOT IN (
-		'_graphjin',
-		'information_schema',
-		'performance_schema',
-		'pg_catalog',
-		'mysql',
-		'sys'
-	)
+	AND r.specific_schema = ANY(current_schemas(false))
+
 UNION
 SELECT r.specific_name as func_id,
 	r.routine_schema as func_schema,
@@ -45,11 +39,5 @@ FROM information_schema.routines r
 		AND a.udt_name = r.type_udt_name
 	)
 WHERE r.routine_type = 'FUNCTION'
-	AND r.specific_schema NOT IN (
-		'_graphjin',
-		'information_schema',
-		'performance_schema',
-		'pg_catalog',
-		'mysql',
-		'sys'
-	);
+	AND r.specific_schema = ANY(current_schemas(false))
+;

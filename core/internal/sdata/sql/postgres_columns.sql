@@ -1,3 +1,17 @@
+WITH RECURSIVE relevant_tables AS (
+    SELECT c.oid
+    FROM pg_class c
+    JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = ANY(current_schemas(false))
+    AND c.relkind IN ('r', 'v', 'm', 'f', 'p')
+
+    UNION
+
+    SELECT co.confrelid
+    FROM pg_constraint co
+    JOIN relevant_tables rt ON co.conrelid = rt.oid
+    WHERE co.contype = 'f'
+)
 SELECT n.nspname as "schema",
 	c.relname as "table",
 	f.attname AS "column",
@@ -70,8 +84,7 @@ FROM pg_attribute f
 	LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
 	LEFT JOIN pg_constraint co ON co.conrelid = c.oid
 	AND f.attnum = ANY (co.conkey)
-WHERE c.relkind IN ('r', 'v', 'm', 'f', 'p')
-	AND n.nspname NOT IN ('_graphjin', 'information_schema', 'pg_catalog')
+WHERE c.oid IN (SELECT oid FROM relevant_tables)
 	AND c.relname != 'schema_version'
 	AND f.attnum > 0
 	AND f.attisdropped = false

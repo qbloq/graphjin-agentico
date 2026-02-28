@@ -50,7 +50,8 @@ func (g *GraphJin) startDBWatcher(ps time.Duration) {
 			latestDi, err := sdata.GetDBInfo(
 				ctx.db,
 				ctx.dbtype,
-				gj.conf.Blocklist)
+				gj.conf.Blocklist,
+				ctx.schemas)
 			if err != nil {
 				gj.log.Printf("database %s: schema poll error: %v", ctx.name, err)
 				continue

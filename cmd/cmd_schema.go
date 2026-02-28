@@ -39,7 +39,7 @@ func cmdDBGenerate(cmd *cobra.Command, args []string) {
 		// Generate schema for each database
 		for dbName, dbConn := range connections {
 			dbConf := conf.Databases[dbName]
-			schemaBytes, err := core.GenerateSchema(dbConn, dbConf.Type, conf.Blocklist)
+			schemaBytes, err := core.GenerateSchema(dbConn, dbConf.Type, conf.Blocklist, []string{dbConf.Schema})
 			if err != nil {
 				log.Fatalf("Failed to generate schema for database '%s': %s", dbName, err)
 			}
@@ -63,7 +63,7 @@ func cmdDBGenerate(cmd *cobra.Command, args []string) {
 	// Single-DB mode
 	initDB(true)
 
-	schemaBytes, err := core.GenerateSchema(db, conf.DB.Type, conf.Blocklist)
+	schemaBytes, err := core.GenerateSchema(db, conf.DB.Type, conf.Blocklist, []string{conf.DB.Schema})
 	if err != nil {
 		log.Fatalf("Failed to generate schema: %s", err)
 	}

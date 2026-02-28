@@ -382,7 +382,7 @@ func readInConfig(configFile string, fs afero.Fs) (*Config, error) {
 	config := &Config{viper: viper}
 	config.ConfigPath = cp
 
-	if err := viper.Unmarshal(&config); err != nil {
+	if err := viper.Unmarshal(config); err != nil {
 		return nil, fmt.Errorf("failed to decode config, %v", err)
 	}
 
@@ -415,7 +415,7 @@ func NewConfig(config, format string) (*Config, error) {
 
 	c := &Config{viper: viper}
 
-	if err := viper.Unmarshal(&c); err != nil {
+	if err := viper.Unmarshal(c); err != nil {
 		return nil, fmt.Errorf("failed to decode config, %v", err)
 	}
 

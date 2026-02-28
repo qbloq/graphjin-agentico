@@ -57,6 +57,7 @@ type dbContext struct {
 	schema        *sdata.DBSchema  // Processed schema with relationships
 	qcodeCompiler *qcode.Compiler  // GraphQL to QCode compiler (validates against this DB's schema)
 	psqlCompiler  *psql.Compiler   // QCode to SQL compiler (generates this DB's dialect)
+	schemas       []string         // Configured schemas for this database
 }
 
 // GraphJin struct is an instance of the GraphJin engine it holds all the required information like
@@ -239,6 +240,11 @@ func (g *GraphJin) newGraphJin(conf *Config,
 		db:     db,     // may be nil for MockDB
 		dbtype: dbtype,
 		dbinfo: dbinfo, // may be preset from watcher/tests
+	}
+
+	// Populate schemas for the primary database
+	if dc, ok := conf.Databases[gj.defaultDB]; ok && dc.Schema != "" {
+		gj.databases[gj.defaultDB].schemas = []string{dc.Schema}
 	}
 
 	for _, op := range options {

@@ -52,7 +52,7 @@ func SchemaDiff(db *sql.DB, dbType string, schemaBytes []byte, blocklist []strin
 	)
 
 	// Get current database schema
-	current, err := sdata.GetDBInfo(db, dbType, blocklist)
+	current, err := sdata.GetDBInfo(db, dbType, blocklist, []string{schema})
 	if err != nil {
 		return nil, fmt.Errorf("failed to discover database schema: %w", err)
 	}
@@ -428,7 +428,7 @@ func SchemaDiffMultiDB(
 		expected := sdata.NewDBInfo(dbType, ds.Version, schema, "", cols, nil, blocklist)
 
 		// Get current database schema
-		current, err := sdata.GetDBInfo(dbConn, dbType, blocklist)
+		current, err := sdata.GetDBInfo(dbConn, dbType, blocklist, []string{schema})
 		if err != nil {
 			return nil, fmt.Errorf("failed to get schema for %s: %w", dbName, err)
 		}

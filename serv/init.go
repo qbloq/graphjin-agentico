@@ -70,6 +70,17 @@ func (s *graphjinService) initConfig() error {
 		c.DBType = c.DB.Type
 	}
 
+	// bridge legacy database config to multi-database map for core engine's use
+	if len(c.Core.Databases) == 0 && (c.DB.Host != "" || c.DB.ConnString != "") {
+		if c.Core.Databases == nil {
+			c.Core.Databases = make(map[string]core.DatabaseConfig)
+		}
+		c.Core.Databases[core.DefaultDBName] = core.DatabaseConfig{
+			Type:   c.DBType,
+			Schema: c.DB.Schema,
+		}
+	}
+
 	// Validate database type early
 	if err := core.ValidateDBType(c.DBType); err != nil {
 		return err

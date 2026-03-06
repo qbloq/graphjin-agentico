@@ -601,10 +601,12 @@ func (co *Compiler) addRelInfo(
 	qc *QCode,
 	sel *Select,
 	field graph.Field,
-) error {
+) (err error) {
+	if name == "__schema" || name == "__type" {
+		return nil
+	}
 	var psel *Select
 	var childF, parentF graph.Field
-	var err error
 
 	childF = field
 

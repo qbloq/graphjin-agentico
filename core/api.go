@@ -563,6 +563,27 @@ func (gj *graphjinEngine) newGraphqlReq(rc *RequestConfig,
 	return
 }
 
+func (r *GraphqlReq) isIntro() bool {
+	if r.name == "IntrospectionQuery" {
+		return true
+	}
+	q := strings.TrimSpace(string(r.query))
+	if strings.HasPrefix(q, "{") {
+		q = strings.TrimSpace(q[1:])
+	} else if strings.HasPrefix(q, "query") {
+		q = strings.TrimSpace(q[5:])
+		if strings.HasPrefix(q, "{") {
+			q = strings.TrimSpace(q[1:])
+		} else {
+			// skip name if any
+			if i := strings.Index(q, "{"); i != -1 {
+				q = strings.TrimSpace(q[i+1:])
+			}
+		}
+	}
+	return strings.HasPrefix(q, "__schema") || strings.HasPrefix(q, "__type")
+}
+
 // Set is used to set the namespace, operation type, name and query for the GraphQL request
 func (r *GraphqlReq) Set(item allow.Item) {
 	r.namespace = item.Namespace
@@ -588,7 +609,7 @@ func (gj *graphjinEngine) query(c context.Context, r GraphqlReq) (
 		name:      r.name,
 	}
 
-	if !gj.prodSec && r.name == "IntrospectionQuery" {
+	if !gj.prodSec && r.isIntro() {
 		resp.res.Data, err = gj.getIntroResult()
 		return
 	}
